@@ -2,7 +2,9 @@
 
 Welcome!
 
-This repository documents my journey exploring Ubuntu as part of my graduate studies in network security. It contains assignments, labs, and resources that showcase my hands-on experience with Linux systems, cybersecurity concepts, and practical tools.
+This repository documents my journey exploring Ubuntu as part of my graduate studies in network security. It contains assignments, labs, and resources that showcase my hands-on experience with Linux systems, cybersecurity concepts, and practical tools. Everything here runs in a self-contained environment (virtual machines, Docker, and other lab setups), so I can safely simulate attacks, defenses, and monitoring without touching production systems.
+
+
 
 ## About This Project
 - Focused on learning and applying network security principles using Ubuntu
