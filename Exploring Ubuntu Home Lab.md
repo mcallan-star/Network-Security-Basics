@@ -3,6 +3,7 @@
 - All outputs are included as a screenshot, with some key points on that particular tool. 
 
 ## 1. Identify Network Interfaces and IP Addresses
+![ip a output](./ubuntu_screenshots/1.png)
  In 1: ```lo:``` means loopback, and every machine has this.
 ```127.0.0.1 ::1``` stands for localhost.  This is the VM talking to itself.
 In 2: ```enp0s8``` is the ethernet adapter that the VirtualBox NAT created.
@@ -19,11 +20,13 @@ The VM is successfully on a network -- NAT -- with address 10.0.2.15. Now, we ca
 - The -tuln options restrict
 the output to show only TCP (t) and UDP (u) ports in listening (l) state without resolving
 names (n)
+![ss -tuln output](./ubuntu_screenshots/2.png)
   
 
 Overview:  The only remotely accessible service is SSH on port 22.  The VM is a DNS client.  It is bound only to loopback, which prevents it from being a public server.  It is running an SSH server on port 22, available on all interfaces. DHCP is bound only to the local network.
 
 ## 3. Analyze Network Connections
+![output](./ubuntu_screenshots/3.png)
 Key terms:
 - COMMAND / PID / USER – which process owns the socket.
 
@@ -41,6 +44,7 @@ Overview:
 Only SSH (22/tcp) is exposed and is listening.  DNS (systemd-resolved) is loopback-only. Outbound DNS queries go to 137.140.1.202, provided by DHCP.  Two established SSH sessions from the host (root and maddog), seen internally as 10.0.2.2.
 
 ## 4. Perform Network Scanning with Nmap
+![nmap installation output](./ubuntu_screenshots/4.png)
 
 
 
