@@ -1,0 +1,4 @@
+Host alias
+    HostName ubuntuHomeLab
+    User maddog
+    Port 22

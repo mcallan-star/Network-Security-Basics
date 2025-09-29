@@ -15,6 +15,7 @@ This repository documents my journey exploring Ubuntu as part of my graduate stu
 
 ### 1 Cybersecurity Tools
 - [Exploring Ubuntu Home Lab](1%20Cybersecurity%20Tools/Exploring%20Ubuntu%20Home%20Lab.md)
+- [Firewalls]
 
 ## Why Ubuntu?
 Ubuntu is a widely used Linux distribution in enterprise environments. Gaining proficiency in Ubuntu is essential for understanding real-world security challenges and solutions.
