@@ -9,20 +9,20 @@ csl: apa-6th-edition.csl
 
 # Introduction
 
-Universal Serial Bus (USB) technology has become the dominant interface for peripheral connectivity in modern computing systems. Since its introduction in 1996, the USB protocol has evolved rapidly, offering increasingly sophisticated functionality for an extensive range of devices to communicate with one another (USB Implementers Forum, 2014). While this evolution has dramatically improved compatibility and ease of use for consumers, it has simultaneously introduced significant security vulnerabilities that challenge traditional endpoint protection strategies.
+Universal Serial Bus (USB) technology has become the dominant interface for peripheral connectivity in modern computing systems. Since its introduction in 1996, the USB protocol has evolved rapidly, offering increasingly sophisticated functionality for an extensive range of devices to communicate with one another [@usb_if_spec]. While this evolution has dramatically improved compatibility and ease of use for consumers, it has simultaneously introduced significant security vulnerabilities that challenge traditional endpoint protection strategies.
 
-The security implications of USB connectivity extend far beyond the commonly understood risks of malware-laden storage devices. A more insidious category of threats has emerged, exploiting fundamental design decisions in the USB specification itself. The BadUSB vulnerability, first publicly disclosed at the Black Hat USA 2014 security conference by researchers Karsten Nohl and Jakob Lell, demonstrated that the firmware residing in USB device controllers could be reprogrammed to conceal attack code, taking advantage of a weakness common to the vast majority of USB peripheral devices: the absence of protection guaranteeing that any new firmware possesses the manufacturer's unforgeable digital signature (Nohl & Lell, 2014).
+The security implications of USB connectivity extend far beyond the commonly understood risks of malware-laden storage devices. A more insidious category of threats has emerged, exploiting fundamental design decisions in the USB specification itself. The BadUSB vulnerability, first publicly disclosed at the Black Hat USA 2014 security conference by researchers Karsten Nohl and Jakob Lell, demonstrated that the firmware residing in USB device controllers could be reprogrammed to conceal attack code, taking advantage of a weakness common to the vast majority of USB peripheral devices: the absence of protection guaranteeing that any new firmware possesses the manufacturer's unforgeable digital signature [@badusb2014].
 
-The significance of BadUSB lies not merely in its exploitation potential, but in its fundamental challenge to the trust model underlying USB device interaction. Unlike conventional malware that operates at the software level and can theoretically be detected by antivirus solutions, BadUSB attacks operate at the firmware level, below the operating system's visibility. As security researchers have noted, once infected, computers and their USB peripherals can never be fully trusted again without complete firmware verification (Blanchet, 2018). This paper provides a comprehensive examination of BadUSB attacks, analyzing the historical context that enabled their emergence, the technical mechanisms underlying their operation, documented attack implementations, and the defensive countermeasures available to mitigate this persistent threat.
+The significance of BadUSB lies not merely in its exploitation potential, but in its fundamental challenge to the trust model underlying USB device interaction. Unlike conventional malware that operates at the software level and can theoretically be detected by antivirus solutions, BadUSB attacks operate at the firmware level, below the operating system's visibility. As security researchers have noted, once infected, computers and their USB peripherals can never be fully trusted again without complete firmware verification [@blanchet2018badusb]. This paper provides a comprehensive examination of BadUSB attacks, analyzing the historical context that enabled their emergence, the technical mechanisms underlying their operation, documented attack implementations, and the defensive countermeasures available to mitigate this persistent threat.
 
 
 # Background: The Evolution from PS/2 to USB
 
 ## The PS/2 Interface
 
-To fully appreciate the security implications introduced by USB technology, it is instructive to examine its predecessor: the PS/2 interface. IBM introduced the PS/2 port in 1987 alongside the Personal System/2 computer series, establishing what would become the standard keyboard and mouse interface for over a decade (IBM, 1987). The PS/2 interface employs a bidirectional synchronous serial protocol using a simple 6-pin mini-DIN connector, with dedicated ports color-coded purple for keyboards and green for mice according to the PC 97 specification.
+To fully appreciate the security implications introduced by USB technology, it is instructive to examine its predecessor: the PS/2 interface. IBM introduced the PS/2 port in 1987 alongside the Personal System/2 computer series, establishing what would become the standard keyboard and mouse interface for over a decade [@ibm_ps2_1987]. The PS/2 interface employs a bidirectional synchronous serial protocol using a simple 6-pin mini-DIN connector, with dedicated ports color-coded purple for keyboards and green for mice according to the PC 97 specification.
 
-The PS/2 keyboard interface is electrically identical to the 5-pin DIN connector used on earlier AT keyboards, differing only in physical connector form factor. This design implements direct digital I/O lines connecting the microcontroller in the external device to the microcontroller on the motherboard, creating a straightforward communication pathway (Chapweske, 2003). The protocol itself is remarkably simple: devices transmit data in frames consisting of 11-12 bits, including start bits, data bits, parity, and stop bits.
+The PS/2 keyboard interface is electrically identical to the 5-pin DIN connector used on earlier AT keyboards, differing only in physical connector form factor. This design implements direct digital I/O lines connecting the microcontroller in the external device to the microcontroller on the motherboard, creating a straightforward communication pathway [@chapweske2003ps2]. The protocol itself is remarkably simple: devices transmit data in frames consisting of 11-12 bits, including start bits, data bits, parity, and stop bits.
 
 From a security perspective, the PS/2 interface possesses several characteristics that inherently limit its attack surface. The protocol is strictly defined for keyboard and mouse input; a device connected to a PS/2 port cannot masquerade as a different class of device. The interface is not hot-pluggable, requiring a system restart when devices are connected or disconnected. Most significantly, PS/2 devices generally lack reprogrammable firmware, relying instead on fixed microcontroller programming established during manufacturing. These constraints, while limiting flexibility, create an environment where the class of attacks enabled by BadUSB becomes fundamentally impossible.
 
@@ -39,7 +39,7 @@ This architectural flexibility, while enabling remarkable innovation in peripher
 
 ## Fundamental Mechanism
 
-The BadUSB attack exploits the reprogrammable nature of firmware in USB device controller chips. The controller chip firmware, which governs how the device identifies itself and communicates with host systems, can in many devices be modified after manufacture. Security researchers demonstrated that by reverse-engineering the firmware update mechanisms of USB controller chips—particularly those manufactured by Phison Electronics, one of the largest USB controller suppliers—attackers could inject arbitrary code into devices previously considered trustworthy (Nohl & Lell, 2014).
+The BadUSB attack exploits the reprogrammable nature of firmware in USB device controller chips. The controller chip firmware, which governs how the device identifies itself and communicates with host systems, can in many devices be modified after manufacture. Security researchers demonstrated that by reverse-engineering the firmware update mechanisms of USB controller chips—particularly those manufactured by Phison Electronics, one of the largest USB controller suppliers—attackers could inject arbitrary code into devices previously considered trustworthy [@badusb2014].
 
 The attack is particularly insidious because it occurs at a level below operating system visibility. When a compromised USB device is connected to a system, it can present itself as any device class the attacker chooses. A USB flash drive, for example, could simultaneously or sequentially present itself as a keyboard, enabling it to inject keystrokes as if a human were typing. Because the malicious code resides in firmware rather than in files on the storage medium, no amount of reformatting or file scanning will remediate the compromise. The malware persists through any action short of re-flashing the firmware with verified clean code—a procedure that is impractical for most users and often impossible without specialized equipment.
 
@@ -49,7 +49,7 @@ BadUSB-style attacks enable several categories of malicious activity. The most c
 
 Network adapter spoofing represents another powerful attack vector. A USB device presenting itself as an Ethernet adapter can intercept network traffic, modify DNS settings to redirect the victim's web traffic through attacker-controlled servers, or establish persistent backdoor connections. This attack is particularly effective because operating systems typically auto-configure network interfaces without user intervention, and the additional network interface may operate undetected alongside legitimate connections.
 
-The attack surface extends to boot-time exploitation as well. USB devices can be configured to interfere with the boot process, loading malicious code before the operating system's security mechanisms are initialized. External storage devices or compromised USB hubs can inject boot sector viruses that establish persistent control before any defensive software loads (SRLabs, 2014).
+The attack surface extends to boot-time exploitation as well. USB devices can be configured to interfere with the boot process, loading malicious code before the operating system's security mechanisms are initialized. External storage devices or compromised USB hubs can inject boot sector viruses that establish persistent control before any defensive software loads [@srlabs2014].
 
 ## Self-Propagation Capabilities
 
@@ -60,21 +60,21 @@ Perhaps most concerning is the potential for BadUSB malware to self-propagate. A
 
 ## The USB Rubber Ducky
 
-The USB Rubber Ducky, developed by security company Hak5, represents one of the earliest commercial implementations of keystroke injection attacks. While not technically a BadUSB attack in the sense of reprogramming existing device firmware, the Rubber Ducky demonstrates the exploitation potential of HID emulation. The device appears to host systems as a standard USB keyboard but executes pre-programmed keystroke payloads at speeds exceeding human typing capability (Hak5, 2020).
+The USB Rubber Ducky, developed by security company Hak5, represents one of the earliest commercial implementations of keystroke injection attacks. While not technically a BadUSB attack in the sense of reprogramming existing device firmware, the Rubber Ducky demonstrates the exploitation potential of HID emulation. The device appears to host systems as a standard USB keyboard but executes pre-programmed keystroke payloads at speeds exceeding human typing capability [@rubberducky_hak5].
 
 The Rubber Ducky employs a simple scripting language called DuckyScript that allows security researchers and penetration testers to define keystroke sequences executed automatically upon device connection. Common payloads include reverse shell establishment, credential harvesting through simulated phishing interfaces, and system configuration modification. The device's effectiveness in penetration testing scenarios has demonstrated that even security-conscious organizations often fail to implement adequate USB device controls.
 
 ## The O.MG Cable
 
-The O.MG Cable, demonstrated by security researcher Mike Grover, advances the concept of malicious USB hardware by embedding attack capabilities within what appears to be a standard USB charging and data cable (O.MG, 2020). The cable contains a wireless implant that allows remote command and control, enabling an attacker to inject keystrokes, deploy payloads, or establish persistence at will after the cable is connected to a target system.
+The O.MG Cable, demonstrated by security researcher Mike Grover, advances the concept of malicious USB hardware by embedding attack capabilities within what appears to be a standard USB charging and data cable [@omg_cable]. The cable contains a wireless implant that allows remote command and control, enabling an attacker to inject keystrokes, deploy payloads, or establish persistence at will after the cable is connected to a target system.
 
 The implications of cable-based attacks are particularly severe for organizational security. Charging cables are ubiquitous in modern work environments, and users routinely connect phones and other devices using cables of unknown provenance. Unlike USB flash drives, which have received considerable security scrutiny, cables are generally perceived as passive components incapable of malicious behavior. The O.MG Cable demonstrates that this assumption is fundamentally incorrect, and that any component in the USB chain—including seemingly inert cables—may harbor malicious capabilities.
 
 ## Flipper Zero and Modern HID Attacks
 
-The Flipper Zero, a portable multi-tool for hardware security research, includes BadUSB functionality among its capabilities (Flipper Devices, 2021). The device can emulate USB HID devices and execute keystroke injection attacks, making techniques previously requiring specialized knowledge accessible to a broader audience. While marketed for legitimate security research and educational purposes, the accessibility of such tools underscores the democratization of USB-based attack capabilities.
+The Flipper Zero, a portable multi-tool for hardware security research, includes BadUSB functionality among its capabilities [@flipper_zero]. The device can emulate USB HID devices and execute keystroke injection attacks, making techniques previously requiring specialized knowledge accessible to a broader audience. While marketed for legitimate security research and educational purposes, the accessibility of such tools underscores the democratization of USB-based attack capabilities.
 
-The Spyduino project further demonstrates the accessibility of HID exploitation, using commonly available Arduino microcontrollers reprogrammed to appear as Human Interface Devices (Dalamagkidis et al., 2019). The project embeds the malicious Arduino within a USB keyboard, enabling it to capture and exfiltrate sensitive information to cloud servers without user awareness. Such implementations require only modest technical expertise and minimal financial investment, lowering the barrier to entry for potential attackers.
+The Spyduino project further demonstrates the accessibility of HID exploitation, using commonly available Arduino microcontrollers reprogrammed to appear as Human Interface Devices [@spyduino2019]. The project embeds the malicious Arduino within a USB keyboard, enabling it to capture and exfiltrate sensitive information to cloud servers without user awareness. Such implementations require only modest technical expertise and minimal financial investment, lowering the barrier to entry for potential attackers.
 
 
 # Defensive Countermeasures
@@ -87,13 +87,13 @@ Even sophisticated endpoint detection and response (EDR) solutions face signific
 
 ## USB Port Control and Physical Security
 
-The most straightforward defensive measure involves physical control over USB ports. Organizations may implement policies requiring the physical disabling of unused USB ports through hardware blocks or BIOS configuration. Some security-sensitive environments employ PS/2 keyboards and mice specifically because the PS/2 interface cannot be exploited through BadUSB-style attacks, as the protocol is strictly limited to keyboard and mouse input and devices generally lack reprogrammable firmware (CISA, 2016).
+The most straightforward defensive measure involves physical control over USB ports. Organizations may implement policies requiring the physical disabling of unused USB ports through hardware blocks or BIOS configuration. Some security-sensitive environments employ PS/2 keyboards and mice specifically because the PS/2 interface cannot be exploited through BadUSB-style attacks, as the protocol is strictly limited to keyboard and mouse input and devices generally lack reprogrammable firmware [@us_cert_badusb_guidance].
 
 However, physical port control is increasingly impractical in modern computing environments where USB connectivity is essential for legitimate business operations. The proliferation of USB-connected peripherals, charging requirements for mobile devices, and user expectations of convenient connectivity all work against restrictive physical controls.
 
 ## Device Whitelisting with USBGuard
 
-Software-based device whitelisting represents a more flexible approach to USB security. The USBGuard software framework, included in Red Hat Enterprise Linux and available for other Linux distributions, implements USB device authorization policies based on device attributes (Red Hat, 2019). When a USB device is connected, USBGuard evaluates it against a configured policy before allowing the device to interact with the system.
+Software-based device whitelisting represents a more flexible approach to USB security. The USBGuard software framework, included in Red Hat Enterprise Linux and available for other Linux distributions, implements USB device authorization policies based on device attributes [@redhat_usbguard]. When a USB device is connected, USBGuard evaluates it against a configured policy before allowing the device to interact with the system.
 
 USBGuard creates device fingerprints based on multiple attributes including vendor and product identifiers, device name, serial number when available, interface types exposed, and the physical port to which the device connects. Administrators can generate initial policies based on currently connected trusted devices, then configure the system to block or require explicit authorization for any device not matching the whitelist.
 
@@ -101,15 +101,15 @@ The effectiveness of whitelisting approaches, however, is limited by fundamental
 
 ## Interface and Behavior Restrictions
 
-Beyond device-level whitelisting, security policies can restrict the specific interfaces a device is permitted to expose. A USB mass storage device claiming additional HID keyboard interfaces—a signature of certain BadUSB attacks—can be blocked based on the mismatch between expected and presented capabilities. GoodUSB, a research prototype, implements this approach by presenting users with a graphical interface to specify expected device functionality and rejecting any usage beyond the stated description (Tian et al., 2015).
+Beyond device-level whitelisting, security policies can restrict the specific interfaces a device is permitted to expose. A USB mass storage device claiming additional HID keyboard interfaces—a signature of certain BadUSB attacks—can be blocked based on the mismatch between expected and presented capabilities. GoodUSB, a research prototype, implements this approach by presenting users with a graphical interface to specify expected device functionality and rejecting any usage beyond the stated description [@tian2015goodusb].
 
-Temporal analysis of device behavior offers another detection avenue. Keystroke injection attacks exhibit characteristic timing patterns distinct from human typing. Malicious devices typically inject commands rapidly to minimize detection windows, while human keyboard input follows statistically predictable patterns with variable inter-key timing. The USBlock system leverages this distinction to detect and block BadUSB-like attacks by correlating input signals with expected human behavior patterns (Neuner et al., 2018).
+Temporal analysis of device behavior offers another detection avenue. Keystroke injection attacks exhibit characteristic timing patterns distinct from human typing. Malicious devices typically inject commands rapidly to minimize detection windows, while human keyboard input follows statistically predictable patterns with variable inter-key timing. The USBlock system leverages this distinction to detect and block BadUSB-like attacks by correlating input signals with expected human behavior patterns [@neuner2018usblock].
 
 ## Firmware Integrity and Secure Updates
 
-Addressing the root cause of BadUSB vulnerabilities requires fundamental changes to USB device firmware architecture. Firmware signing mechanisms, where devices will only accept firmware updates bearing cryptographic signatures from authorized sources, can prevent unauthorized modification. The National Institute of Standards and Technology (NIST) has published guidance on secure firmware update practices applicable to USB and other embedded devices (NIST, 2018).
+Addressing the root cause of BadUSB vulnerabilities requires fundamental changes to USB device firmware architecture. Firmware signing mechanisms, where devices will only accept firmware updates bearing cryptographic signatures from authorized sources, can prevent unauthorized modification. The National Institute of Standards and Technology (NIST) has published guidance on secure firmware update practices applicable to USB and other embedded devices [@nist_firmware_signing].
 
-Trusted Platform Module (TPM) integration offers another architectural approach, enabling platforms to verify the integrity of connected devices through cryptographic attestation. The Trusted Computing Group has developed specifications for extending platform integrity verification to include peripheral firmware, though adoption remains limited (TCG, 2019).
+Trusted Platform Module (TPM) integration offers another architectural approach, enabling platforms to verify the integrity of connected devices through cryptographic attestation. The Trusted Computing Group has developed specifications for extending platform integrity verification to include peripheral firmware, though adoption remains limited [@tcg_firmware_integrity].
 
 The practical challenge with firmware-based solutions lies in the existing installed base of vulnerable devices. Billions of USB devices currently in use lack secure firmware update mechanisms and cannot be retroactively protected. Even for newly manufactured devices, implementing secure boot and firmware signing adds cost and complexity that may not be prioritized by manufacturers of low-margin peripherals.
 
@@ -118,15 +118,15 @@ The practical challenge with firmware-based solutions lies in the existing insta
 
 ## USB Type-C and New Attack Surfaces
 
-The introduction of USB Type-C connectors and USB 3.x protocols has expanded both functionality and attack surface. The BADUSB-C attack model demonstrates that USB Type-C's enhanced capabilities, including alternate display modes and power delivery negotiation, introduce new exploitation opportunities not present in earlier USB generations (Wang et al., 2021). The reversible connector design and increased bandwidth of Type-C enable attacks that were impractical with previous USB versions.
+The introduction of USB Type-C connectors and USB 3.x protocols has expanded both functionality and attack surface. The BADUSB-C attack model demonstrates that USB Type-C's enhanced capabilities, including alternate display modes and power delivery negotiation, introduce new exploitation opportunities not present in earlier USB generations [@wang2021badusbc]. The reversible connector design and increased bandwidth of Type-C enable attacks that were impractical with previous USB versions.
 
 USB Power Delivery (USB-PD), the negotiated charging protocol used by Type-C devices, represents a particularly concerning attack vector. Malicious chargers or cables could potentially manipulate power negotiation to damage devices or exploit vulnerabilities in USB-PD implementations. The implicit trust placed in charging connections, combined with the complexity of modern USB protocols, creates opportunities for sophisticated attacks.
 
 ## Social Engineering and USB Attacks
 
-Technical countermeasures alone cannot fully address USB security risks because many attacks rely on social engineering to achieve initial access. Research has demonstrated that users will pick up and connect USB devices found in public locations, with some studies showing connection rates exceeding 45% for dropped USB drives (Tischer et al., 2016). Attackers can distribute compromised devices through various channels: leaving them in parking lots, mailing them to targets as promotional items, or substituting them for legitimate devices in supply chains.
+Technical countermeasures alone cannot fully address USB security risks because many attacks rely on social engineering to achieve initial access. Research has demonstrated that users will pick up and connect USB devices found in public locations, with some studies showing connection rates exceeding 45% for dropped USB drives [@tischer2016users]. Attackers can distribute compromised devices through various channels: leaving them in parking lots, mailing them to targets as promotional items, or substituting them for legitimate devices in supply chains.
 
-The ByteBait simulation framework for BadUSB phishing campaigns demonstrates the continued effectiveness of social engineering approaches (Chen et al., 2025). As technical defenses improve, attackers increasingly rely on human factors to achieve device connection, underscoring the importance of user education alongside technical controls.
+The ByteBait simulation framework for BadUSB phishing campaigns demonstrates the continued effectiveness of social engineering approaches [@chen2025bytebait]. As technical defenses improve, attackers increasingly rely on human factors to achieve device connection, underscoring the importance of user education alongside technical controls.
 
 
 # Conclusion
@@ -141,41 +141,3 @@ Looking forward, the security of USB devices will depend on industry adoption of
 
 
 # References
-
-Blanchet, S. (2018). *BadUSB, the threat hidden in ordinary objects*. ResearchGate. https://www.researchgate.net/publication/331876425
-
-Chapweske, A. (2003). *The PS/2 keyboard interface*. Retrieved from https://www-ug.eecg.toronto.edu/msl/nios_devices/datasheets/PS2%20Keyboard%20Protocol.htm
-
-Chen, X., et al. (2025). ByteBait USB: A robust simulation toolkit for BadUSB phishing campaigns. *Journal of King Saud University - Computer and Information Sciences*. https://doi.org/10.1007/s44443-025-00067-6
-
-Cybersecurity and Infrastructure Security Agency. (2016). *USB device security: Guidance and mitigations*. https://www.cisa.gov/
-
-Dalamagkidis, K., et al. (2019). Spyduino: Arduino as a HID exploiting the BadUSB vulnerability. In *Proceedings of the 14th International Conference on Availability, Reliability and Security*. IEEE. https://doi.org/10.1109/IC2IE47452.2019.8804730
-
-Flipper Devices. (2021). *Flipper Zero: Portable multi-tool for hardware hacking*. https://flipperzero.one/
-
-Hak5. (2020). *USB Rubber Ducky: Keystroke injection payload tool*. https://shop.hak5.org/products/usb-rubber-ducky
-
-IBM. (1987). *IBM Personal System/2 hardware interface technical reference*. IBM Corporation.
-
-National Institute of Standards and Technology. (2018). *Secure firmware update practices* (NIST Special Publication). https://www.nist.gov/
-
-Neuner, S., Voyiatzis, A. G., Fotopoulos, S., Mulliner, C., & Weippl, E. R. (2018). USBlock: Blocking USB-based keypress injection attacks. In *Proceedings of the 32nd Annual IFIP WG 11.3 Conference on Data and Applications Security and Privacy* (pp. 278-295). Springer.
-
-Nohl, K., & Lell, J. (2014, August). BadUSB—On accessories that turn evil. Presented at Black Hat USA 2014, Las Vegas, NV. https://www.blackhat.com/us-14/briefings.html
-
-O.MG. (2020). *O.MG Cable—When cables attack*. https://omg.cable/
-
-Red Hat. (2019). *Security guide: Using USBGuard*. Red Hat Enterprise Linux 7 Documentation. https://docs.redhat.com/
-
-SRLabs. (2014). *BadUSB: On accessories that turn evil*. Security Research Labs. https://srlabs.de/badusb/
-
-Tian, D. J., Bates, A., & Butler, K. (2015). Defending against malicious USB firmware with GoodUSB. In *Proceedings of the 31st Annual Computer Security Applications Conference* (pp. 261-270). ACM.
-
-Tischer, M., Durumeric, Z., Foster, S., Duan, S., Mori, A., Bursztein, E., & Bailey, M. (2016). Users really do plug in USB drives they find. In *Proceedings of the 2016 IEEE Symposium on Security and Privacy* (pp. 306-319). IEEE.
-
-Trusted Computing Group. (2019). *TCG PC client platform firmware integrity measurement*. https://trustedcomputinggroup.org/
-
-USB Implementers Forum. (2014). *Universal Serial Bus specification*. https://www.usb.org/document-library
-
-Wang, Z., et al. (2021). BADUSB-C: Revisiting BadUSB with Type-C. In *Proceedings of the 15th USENIX Workshop on Offensive Technologies (WOOT '21)*. USENIX Association.
